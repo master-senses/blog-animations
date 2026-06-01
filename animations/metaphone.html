@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How Metaphone Works</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0d0d0d;
+    color: #fff;
+    font-family: 'IBM Plex Mono', monospace;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 24px;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 780px;
+    background: #111;
+    border: 2px solid #ff6000;
+  }
+
+  .card-header {
+    padding: 20px 24px;
+    border-bottom: 2px solid #ff6000;
+  }
+
+  .title { font-size: 26px; font-weight: 700; color: #ff6000; letter-spacing: .04em; }
+
+  .body { padding: 28px 24px; }
+
+  /* Word pair */
+  .words {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+
+  .word-block {
+    padding: 16px;
+    border: 2px solid #333;
+    background: #1a1a1a;
+  }
+
+  .wlabel { font-size: 16px; font-weight: 700; letter-spacing: .1em; color: #ff6000; margin-bottom: 10px; }
+  .wtext  { font-size: 28px; font-weight: 700; }
+  .wtext.canonical { color: #ff6000; }
+  .wtext.stt       { color: #fff; }
+
+  /* Step pipeline */
+  .step {
+    display: grid;
+    grid-template-columns: 140px 1fr 1fr;
+    gap: 12px;
+    align-items: center;
+    padding: 14px 0;
+    border-bottom: 1px solid #222;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity .35s, transform .35s;
+  }
+
+  .step.visible { opacity: 1; transform: translateY(0); }
+
+  .step-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    text-align: right;
+    padding-right: 14px;
+    border-right: 2px solid #333;
+  }
+
+  .step-val {
+    font-size: 24px;
+    font-weight: 600;
+    padding: 8px 14px;
+    background: #1a1a1a;
+    text-align: center;
+  }
+
+  .keep { color: #ff6000; }
+  .drop { color: #888; text-decoration: line-through; }
+
+  /* Match */
+  .match {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 12px;
+    align-items: center;
+    margin-top: 24px;
+    opacity: 0;
+    transition: opacity .4s;
+  }
+
+  .match.visible { opacity: 1; }
+
+  .code-chip {
+    font-size: 44px;
+    font-weight: 700;
+    padding: 16px;
+    background: #ff6000;
+    color: #000;
+    text-align: center;
+    letter-spacing: .1em;
+  }
+
+  .match-eq {
+    text-align: center;
+    font-size: 28px;
+    font-weight: 700;
+    color: #ff6000;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="card-header">
+    <div class="title">METAPHONE</div>
+  </div>
+  <div class="body">
+    <div class="words">
+      <div class="word-block">
+        <div class="wlabel">CANONICAL</div>
+        <div class="wtext canonical">carfentanyl</div>
+      </div>
+      <div class="word-block">
+        <div class="wlabel">WEB STT</div>
+        <div class="wtext stt">car-fend-nile</div>
+      </div>
+    </div>
+
+    <div class="step" id="s0">
+      <div class="step-name">LETTERS</div>
+      <div class="step-val">carfentanyl</div>
+      <div class="step-val">carfendnile</div>
+    </div>
+    <div class="step" id="s1">
+      <div class="step-name">DROP VOWELS</div>
+      <div class="step-val">c<span class="drop">a</span>rf<span class="drop">e</span>nt<span class="drop">a</span>nyl</div>
+      <div class="step-val">c<span class="drop">a</span>rf<span class="drop">e</span>ndn<span class="drop">i</span>l<span class="drop">e</span></div>
+    </div>
+    <div class="step" id="s2">
+      <div class="step-name">MAP</div>
+      <div class="step-val"><span class="keep">K R F N</span></div>
+      <div class="step-val"><span class="keep">K R F N</span></div>
+    </div>
+
+    <div class="match" id="match">
+      <div class="code-chip">KRFN</div>
+      <div class="match-eq">=</div>
+      <div class="code-chip">KRFN</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const steps = [0,1,2].map(i => document.getElementById('s' + i));
+  const match = document.getElementById('match');
+
+  function run() {
+    steps.forEach(s => s.classList.remove('visible'));
+    match.classList.remove('visible');
+    steps.forEach((s,i) => setTimeout(() => s.classList.add('visible'), 500 + i * 850));
+    setTimeout(() => match.classList.add('visible'), 500 + 3 * 850);
+    setTimeout(() => run(), 500 + 4 * 850 + 2000);
+  }
+  run();
+</script>
+</body>
+</html>

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Latency Comparison</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0d0d0d;
+    color: #fff;
+    font-family: 'IBM Plex Mono', monospace;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 24px;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 780px;
+    background: #111;
+    border: 2px solid #ff6000;
+  }
+
+  .card-header {
+    padding: 20px 24px;
+    border-bottom: 2px solid #ff6000;
+  }
+
+  .title { font-size: 26px; font-weight: 700; color: #ff6000; letter-spacing: .04em; }
+
+  .body { padding: 28px 24px; display: flex; flex-direction: column; gap: 24px; }
+
+  .tl { }
+
+  .tl-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 10px;
+  }
+
+  .tl-name { font-size: 20px; font-weight: 700; color: #fff; }
+  .tl-time { font-size: 40px; font-weight: 700; min-width: 100px; text-align: right; }
+  .tl.slow .tl-time { color: #cc2200; }
+  .tl.fast .tl-time { color: #ff6000; }
+
+  .tl-track {
+    height: 48px;
+    background: #0d0d0d;
+    border: 2px solid #333;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .tl-bar {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 0;
+    display: flex;
+    align-items: center;
+    padding-left: 14px;
+    font-size: 18px;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  .tl.slow .tl-bar { background: #3a0a0a; border-right: 3px solid #cc2200; color: #cc2200; }
+  .tl.fast .tl-bar { background: #ff6000; color: #000; }
+
+  .tl-label { margin-top: 10px; font-size: 18px; color: #fff; font-weight: 600; }
+  .tl.slow .tl-label em { color: #ff4444; font-style: normal; font-weight: 700; }
+  .tl.fast .tl-label em { color: #ff6000; font-style: normal; font-weight: 700; }
+
+  .badge {
+    display: flex;
+    justify-content: center;
+    margin-top: 8px;
+  }
+
+  .badge-inner {
+    font-size: 24px;
+    font-weight: 700;
+    padding: 12px 28px;
+    background: #ff6000;
+    color: #000;
+    letter-spacing: .05em;
+    opacity: 0;
+    transform: scale(.95);
+    transition: opacity .4s, transform .4s;
+  }
+
+  .badge-inner.visible { opacity: 1; transform: scale(1); }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="card-header">
+    <div class="title">LATENCY</div>
+  </div>
+  <div class="body">
+
+    <div class="tl slow">
+      <div class="tl-header">
+        <span class="tl-name">WHISPER V3 LARGE</span>
+        <span class="tl-time" id="t-whisper">—</span>
+      </div>
+      <div class="tl-track">
+        <div class="tl-bar" id="b-whisper">WHISPER</div>
+      </div>
+      <div class="tl-label"><em>5.5–7s</em></div>
+    </div>
+
+    <div class="tl fast">
+      <div class="tl-header">
+        <span class="tl-name">WEB API + CORRECTION</span>
+        <span class="tl-time" id="t-api">—</span>
+      </div>
+      <div class="tl-track">
+        <div class="tl-bar" id="b-api">WEB API</div>
+      </div>
+      <div class="tl-label"><em>0.5s</em></div>
+    </div>
+
+    <div class="badge">
+      <div class="badge-inner" id="badge">14× FASTER</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const MAX = 7;
+
+  function countUp(el, target, ms) {
+    const t0 = performance.now();
+    const tick = now => {
+      const p = Math.min((now - t0) / ms, 1);
+      el.textContent = (p * target).toFixed(1) + 's';
+      if (p < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }
+
+  function run() {
+    const bW = document.getElementById('b-whisper');
+    const bA = document.getElementById('b-api');
+    const tW = document.getElementById('t-whisper');
+    const tA = document.getElementById('t-api');
+    const badge = document.getElementById('badge');
+
+    bW.style.transition = bA.style.transition = 'none';
+    bW.style.width = bA.style.width = '0';
+    badge.classList.remove('visible');
+    tW.textContent = tA.textContent = '—';
+
+    setTimeout(() => {
+      bW.style.transition = 'width 1.5s cubic-bezier(.4,0,.2,1)';
+      bW.style.width = (6.5 / MAX * 100) + '%';
+      countUp(tW, 6.5, 1500);
+    }, 500);
+
+    setTimeout(() => {
+      bA.style.transition = 'width .5s cubic-bezier(.4,0,.2,1)';
+      bA.style.width = (0.5 / MAX * 100) + '%';
+      countUp(tA, 0.5, 500);
+    }, 1400);
+
+    setTimeout(() => badge.classList.add('visible'), 2600);
+    setTimeout(run, 6000);
+  }
+  run();
+</script>
+</body>
+</html>

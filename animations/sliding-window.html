@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sliding Window Matcher</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0d0d0d;
+    color: #fff;
+    font-family: 'IBM Plex Mono', monospace;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 24px;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 820px;
+    background: #111;
+    border: 2px solid #ff6000;
+  }
+
+  .card-header {
+    padding: 20px 24px;
+    border-bottom: 2px solid #ff6000;
+  }
+
+  .title { font-size: 26px; font-weight: 700; color: #ff6000; letter-spacing: .04em; }
+
+  .body { padding: 28px 24px; }
+
+  .tokens {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .tok {
+    font-size: 22px;
+    font-weight: 600;
+    padding: 12px 18px;
+    border: 2px solid #444;
+    background: #1a1a1a;
+    color: #e8e8e8;
+    transition: border-color .2s, background .2s, color .2s, transform .2s;
+  }
+
+  .tok.active {
+    border-color: #ff6000;
+    background: #1f0e00;
+    color: #fff;
+    transform: translateY(-3px);
+  }
+
+  .tok.matched {
+    border-color: #ff6000;
+    background: #ff6000;
+    color: #000;
+  }
+
+  .status {
+    padding: 18px 20px;
+    border: 2px solid #333;
+    background: #1a1a1a;
+    min-height: 88px;
+    margin-bottom: 24px;
+    transition: border-color .2s;
+  }
+
+  .status.active { border-color: #ff6000; }
+  .status.match  { border-color: #ff6000; background: #1f0e00; }
+
+  .status-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .badge {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    padding: 4px 10px;
+    background: #ff6000;
+    color: #000;
+  }
+
+  .status.active .badge { background: #333; color: #fff; }
+
+  .win-badge {
+    font-size: 14px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border: 2px solid #ff6000;
+    color: #ff6000;
+  }
+
+  .status-phrase { font-size: 24px; font-weight: 600; color: #fff; margin-bottom: 8px; }
+  .status-replace { font-size: 24px; font-weight: 700; color: #ff6000; }
+
+  .dots {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 24px;
+  }
+
+  .dot {
+    width: 8px; height: 8px;
+    background: #333;
+    transition: background .2s;
+  }
+
+  .dot.active { background: #ff6000; }
+  .dot.done   { background: #663000; }
+
+  .result {
+    border-top: 2px solid #333;
+    padding-top: 20px;
+    display: flex;
+    gap: 14px;
+    align-items: baseline;
+    flex-wrap: wrap;
+  }
+
+  .result-label { font-size: 18px; font-weight: 700; color: #ff6000; }
+  .result-text  { font-size: 24px; font-weight: 700; color: #fff; }
+  .result-text strong { color: #ff6000; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="card-header">
+    <div class="title">SLIDING WINDOW</div>
+  </div>
+  <div class="body">
+    <div class="tokens" id="tokens">
+      <span class="tok" data-i="0">The</span>
+      <span class="tok" data-i="1">alien</span>
+      <span class="tok" data-i="2">liked</span>
+      <span class="tok" data-i="3">the</span>
+      <span class="tok" data-i="4">earth</span>
+      <span class="tok" data-i="5">drug</span>
+      <span class="tok" data-i="6">car</span>
+      <span class="tok" data-i="7">fend</span>
+      <span class="tok" data-i="8">nile</span>
+    </div>
+    <div class="dots" id="dots"></div>
+
+    <div class="status active" id="status-box">
+      <div class="status-top">
+        <span class="badge" id="badge">NO MATCH</span>
+        <span class="win-badge" id="win-badge">WIN 3</span>
+      </div>
+      <div class="status-phrase" id="status-phrase"></div>
+      <div class="status-replace" id="status-replace"></div>
+    </div>
+
+    <div class="result">
+      <span class="result-label">RESULT →</span>
+      <span class="result-text">The alien liked the earth drug <strong>carfentanyl</strong></span>
+    </div>
+  </div>
+</div>
+
+<script>
+  const TOKENS = ['The','alien','liked','the','earth','drug','car','fend','nile'];
+  const MAX_WIN = 3;
+
+  function phraseAt(start, winLen) {
+    return TOKENS.slice(start, start + winLen).join(' ');
+  }
+
+  /** WIN 3: [0–2], [3–5], [6–8]. Then WIN 2 pairs, then singles. Stop on match. */
+  function buildFrames() {
+    const frames = [];
+
+    for (let winLen = MAX_WIN; winLen >= 1; winLen--) {
+      let foundMatch = false;
+
+      for (let start = 0; start < TOKENS.length; start += winLen) {
+        if (start + winLen > TOKENS.length) continue;
+
+        const isMatch = winLen === 3 && start === 6;
+        frames.push({
+          start,
+          winLen,
+          phrase: '"' + phraseAt(start, winLen) + '"',
+          action: isMatch ? 'match' : 'no_match',
+          replace: isMatch ? 'carfentanyl' : null,
+        });
+
+        if (isMatch) {
+          foundMatch = true;
+          break;
+        }
+      }
+
+      if (foundMatch) break;
+    }
+
+    return frames;
+  }
+
+  const FRAMES = buildFrames();
+  const tokEls = Array.from(document.querySelectorAll('.tok'));
+  const dotsC = document.getElementById('dots');
+
+  const dotEls = FRAMES.map(() => {
+    const d = document.createElement('div');
+    d.className = 'dot';
+    dotsC.appendChild(d);
+    return d;
+  });
+
+  let cur = 0;
+
+  function highlightWindow(start, winLen, matched) {
+    const len = Math.min(winLen, MAX_WIN);
+    tokEls.forEach((el, j) => {
+      el.classList.remove('active', 'matched');
+      if (j >= start && j < start + len) {
+        el.classList.add(matched ? 'matched' : 'active');
+      }
+    });
+  }
+
+  function render(i) {
+    const f = FRAMES[i];
+    const winLen = Math.min(f.winLen, MAX_WIN);
+
+    highlightWindow(f.start, winLen, f.action === 'match');
+
+    dotEls.forEach((d, j) => {
+      d.className = 'dot' + (j < i ? ' done' : j === i ? ' active' : '');
+    });
+
+    const box = document.getElementById('status-box');
+    box.className = 'status ' + (f.action === 'match' ? 'match' : 'active');
+    document.getElementById('badge').textContent = f.action === 'match' ? 'MATCH ✓' : 'NO MATCH';
+    document.getElementById('win-badge').textContent = 'WIN ' + winLen;
+    document.getElementById('status-phrase').textContent = f.phrase;
+    document.getElementById('status-replace').textContent =
+      f.action === 'match' ? '→ ' + f.replace : '';
+  }
+
+  function tick() {
+    render(cur);
+    const delay = FRAMES[cur].action === 'match' ? 2800 : 1400;
+    cur = (cur + 1) % FRAMES.length;
+    setTimeout(tick, delay);
+  }
+
+  tick();
+</script>
+</body>
+</html>

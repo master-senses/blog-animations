@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blog animations</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@600;700&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0d0d0d;
+    color: #fff;
+    font-family: 'IBM Plex Mono', monospace;
+    padding: 40px 24px;
+  }
+  h1 { font-size: 28px; color: #ff6000; margin-bottom: 32px; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+  }
+  a.card {
+    display: block;
+    background: #111;
+    border: 2px solid #333;
+    padding: 20px;
+    text-decoration: none;
+    color: #fff;
+    font-size: 20px;
+    font-weight: 700;
+    transition: border-color .2s;
+  }
+  a.card:hover { border-color: #ff6000; color: #ff6000; }
+</style>
+</head>
+<body>
+<h1>ANIMATIONS</h1>
+<div class="grid">
+  <a class="card" href="sliding-window.html">SLIDING WINDOW</a>
+  <a class="card" href="metaphone.html">METAPHONE</a>
+  <a class="card" href="phonetic-vs-edit.html">PHONETIC vs EDIT</a>
+  <a class="card" href="pipeline-latency.html">LATENCY</a>
+  <a class="card" href="acronym-hashmap.html">ACRONYM HASHMAP</a>
+</div>
+</body>
+</html>

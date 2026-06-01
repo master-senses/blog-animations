@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phonetic vs Edit Distance</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0d0d0d;
+    color: #fff;
+    font-family: 'IBM Plex Mono', monospace;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 24px;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 780px;
+    background: #111;
+    border: 2px solid #ff6000;
+  }
+
+  .card-header {
+    padding: 20px 24px;
+    border-bottom: 2px solid #ff6000;
+  }
+
+  .title { font-size: 26px; font-weight: 700; color: #ff6000; letter-spacing: .04em; }
+
+  .body { padding: 28px 24px; }
+
+  /* Word pair */
+  .words {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+  }
+
+  .word {
+    font-size: 28px;
+    font-weight: 700;
+    padding: 12px 20px;
+    border: 2px solid #333;
+    background: #1a1a1a;
+  }
+
+  .word.canonical { color: #ff6000; border-color: #ff6000; }
+  .word.stt       { color: #fff; }
+  .sep { font-size: 28px; color: #fff; }
+
+  /* Cols */
+  .cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .metric {
+    border: 2px solid #333;
+    background: #1a1a1a;
+    padding: 20px;
+  }
+
+  .metric-name { font-size: 20px; font-weight: 700; margin-bottom: 16px; }
+  .metric.bad  .metric-name { color: #fff; }
+  .metric.good .metric-name { color: #ff6000; }
+
+  /* Bar */
+  .bar-track {
+    height: 44px;
+    background: #0d0d0d;
+    border: 2px solid #333;
+    position: relative;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+
+  .bar-fill {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 0;
+    transition: width 1.3s cubic-bezier(.16,1,.3,1);
+  }
+
+  .bar-fill.bad  { background: #5c1a1a; border-right: 3px solid #cc2200; }
+  .bar-fill.good { background: #ff6000; }
+
+  .bar-pct {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+    font-size: 26px;
+    font-weight: 700;
+  }
+
+  .metric.bad  .bar-pct { color: #cc2200; }
+  .metric.good .bar-pct { color: #000; }
+
+  .verdict {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+  }
+
+  .metric.bad  .verdict { color: #cc2200; }
+  .metric.good .verdict { color: #ff6000; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="card-header">
+    <div class="title">PHONETIC vs EDIT DISTANCE</div>
+  </div>
+  <div class="body">
+    <div class="words">
+      <div class="word canonical">carfentanyl</div>
+      <div class="sep">↔</div>
+      <div class="word stt">car-fend-nile</div>
+    </div>
+
+    <div class="cols">
+      <div class="metric bad">
+        <div class="metric-name">EDIT DISTANCE</div>
+        <div class="bar-track">
+          <div class="bar-fill bad" id="bar-edit"></div>
+          <div class="bar-pct" id="pct-edit">0%</div>
+        </div>
+        <div class="verdict">BELOW THRESHOLD</div>
+      </div>
+
+      <div class="metric good">
+        <div class="metric-name">METAPHONE</div>
+        <div class="bar-track">
+          <div class="bar-fill good" id="bar-meta"></div>
+          <div class="bar-pct" id="pct-meta">0%</div>
+        </div>
+        <div class="verdict">→ REPLACE</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function animatePct(fillEl, pctEl, target, duration) {
+    const start = performance.now();
+    const tick = now => {
+      const p = Math.min((now - start) / duration, 1);
+      const v = Math.round(p * target);
+      fillEl.style.width = v + '%';
+      pctEl.textContent  = v + '%';
+      if (p < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }
+
+  function run() {
+    const bE = document.getElementById('bar-edit');
+    const bM = document.getElementById('bar-meta');
+    const pE = document.getElementById('pct-edit');
+    const pM = document.getElementById('pct-meta');
+
+    bE.style.transition = bM.style.transition = 'none';
+    bE.style.width = bM.style.width = '0';
+    pE.textContent = pM.textContent = '0%';
+
+    setTimeout(() => animatePct(bE, pE, 33, 1100), 600);
+    setTimeout(() => animatePct(bM, pM, 100, 1000), 1200);
+    setTimeout(run, 5000);
+  }
+  run();
+</script>
+</body>
+</html>

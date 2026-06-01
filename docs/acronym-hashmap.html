@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Acronym HashMap</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0d0d0d;
+    color: #fff;
+    font-family: 'IBM Plex Mono', monospace;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 24px;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 780px;
+    background: #111;
+    border: 2px solid #ff6000;
+  }
+
+  .card-header {
+    padding: 20px 24px;
+    border-bottom: 2px solid #ff6000;
+  }
+
+  .title { font-size: 26px; font-weight: 700; color: #ff6000; letter-spacing: .04em; }
+
+  .body { padding: 28px 24px; }
+
+  /* Lookup row */
+  .lookup {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 16px;
+    align-items: stretch;
+    margin-bottom: 28px;
+  }
+
+  .lbox {
+    padding: 20px;
+    border: 2px solid #333;
+    background: #1a1a1a;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-height: 80px;
+    justify-content: center;
+  }
+
+  .lbox.hit { border-color: #ff6000; background: #1f0e00; }
+
+  .ll { font-size: 16px; font-weight: 700; letter-spacing: .1em; color: #ff6000; text-transform: uppercase; }
+  .lv { font-size: 32px; font-weight: 700; color: #fff; }
+  .lbox.hit .lv { color: #ff6000; }
+
+  .arrow {
+    font-size: 28px;
+    color: #ff6000;
+    display: flex;
+    align-items: center;
+    font-weight: 700;
+  }
+
+  /* Status */
+  .status-line {
+    font-size: 22px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 24px;
+    min-height: 22px;
+    text-align: center;
+  }
+
+  .status-line.found { color: #ff6000; }
+
+  /* Table */
+  .map-label {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: #ff6000;
+    margin-bottom: 12px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  th {
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 2px solid #333;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #ff6000;
+  }
+
+  td {
+    padding: 14px;
+    border-bottom: 1px solid #222;
+    font-size: 22px;
+    font-weight: 600;
+    color: #fff;
+  }
+
+  tr.hit td { background: #1f0e00; }
+  tr.hit td:first-child { color: #ff6000; }
+  tr.hit td:last-child  { color: #fff; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="card-header">
+    <div class="title">ACRONYM HASHMAP</div>
+  </div>
+  <div class="body">
+    <div class="lookup">
+      <div class="lbox" id="lbox-q">
+        <div class="ll">STT HEARD</div>
+        <div class="lv" id="lv-q">ay bee see</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="lbox" id="lbox-r">
+        <div class="ll">CANONICAL</div>
+        <div class="lv" id="lv-r">…</div>
+      </div>
+    </div>
+
+    <div class="status-line" id="status"></div>
+
+    <div class="map-label">HashMap</div>
+    <table>
+      <thead><tr><th>Acronym</th><th>STT enunciation</th></tr></thead>
+      <tbody id="tbody">
+        <tr data-k="ABC"><td>ABC</td><td>ay bee see</td></tr>
+        <tr data-k="PBM"><td>PBM</td><td>pee bee em</td></tr>
+        <tr data-k="HCP"><td>HCP</td><td>aitch see pee</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  const ENTRIES = [
+    { k: 'ABC', stt: 'ay bee see' },
+    { k: 'PBM', stt: 'pee bee em' },
+    { k: 'HCP', stt: 'aitch see pee' },
+  ];
+  let idx = 0;
+
+  function run() {
+    const e = ENTRIES[idx++ % ENTRIES.length];
+    const lvQ = document.getElementById('lv-q');
+    const lvR = document.getElementById('lv-r');
+    const lboxR = document.getElementById('lbox-r');
+    const status = document.getElementById('status');
+
+    lvQ.textContent = e.stt;
+    lvR.textContent = '…';
+    lboxR.classList.remove('hit');
+    status.textContent = 'looking up…';
+    status.className = 'status-line';
+    document.querySelectorAll('#tbody tr').forEach(r => r.classList.remove('hit'));
+
+    setTimeout(() => {
+      document.querySelector(`#tbody tr[data-k="${e.k}"]`).classList.add('hit');
+    }, 700);
+
+    setTimeout(() => {
+      lvR.textContent = e.k;
+      lboxR.classList.add('hit');
+      status.textContent = `"${e.stt}" → ${e.k}`;
+      status.className = 'status-line found';
+    }, 1300);
+
+    setTimeout(run, 3600);
+  }
+  run();
+</script>
+</body>
+</html>
