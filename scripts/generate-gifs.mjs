@@ -23,7 +23,7 @@ const PAGES = [
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
-  '.css': 'text/css',
+  '.css': 'text/css; charset=utf-8',
   '.js': 'text/javascript',
 }
 

@@ -4,14 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Acronym HashMap</title>
+
+<link rel="stylesheet" href="theme.css">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap');
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
-    background: #0d0d0d;
-    color: #fff;
+    background: var(--bg);
+    color: var(--text);
     font-family: 'IBM Plex Mono', monospace;
     display: flex;
     align-items: center;
@@ -23,16 +25,16 @@
   .card {
     width: 100%;
     max-width: 780px;
-    background: #111;
-    border: 2px solid #ff6000;
+    background: var(--card);
+    border: 2px solid var(--accent);
   }
 
   .card-header {
     padding: 20px 24px;
-    border-bottom: 2px solid #ff6000;
+    border-bottom: 2px solid var(--accent);
   }
 
-  .title { font-size: 26px; font-weight: 700; color: #ff6000; letter-spacing: .04em; }
+  .title { font-size: 26px; font-weight: 700; color: var(--accent); letter-spacing: .04em; }
 
   .body { padding: 28px 24px; }
 
@@ -47,8 +49,8 @@
 
   .lbox {
     padding: 20px;
-    border: 2px solid #333;
-    background: #1a1a1a;
+    border: 2px solid var(--border);
+    background: var(--surface);
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -56,15 +58,15 @@
     justify-content: center;
   }
 
-  .lbox.hit { border-color: #ff6000; background: #1f0e00; }
+  .lbox.hit { border-color: var(--accent); background: var(--accent-bg); }
 
-  .ll { font-size: 16px; font-weight: 700; letter-spacing: .1em; color: #ff6000; text-transform: uppercase; }
-  .lv { font-size: 32px; font-weight: 700; color: #fff; }
-  .lbox.hit .lv { color: #ff6000; }
+  .ll { font-size: 16px; font-weight: 700; letter-spacing: .1em; color: var(--accent); text-transform: uppercase; }
+  .lv { font-size: 32px; font-weight: 700; color: var(--text); }
+  .lbox.hit .lv { color: var(--accent); }
 
   .arrow {
     font-size: 28px;
-    color: #ff6000;
+    color: var(--accent);
     display: flex;
     align-items: center;
     font-weight: 700;
@@ -74,13 +76,13 @@
   .status-line {
     font-size: 22px;
     font-weight: 700;
-    color: #fff;
+    color: var(--text);
     margin-bottom: 24px;
     min-height: 22px;
     text-align: center;
   }
 
-  .status-line.found { color: #ff6000; }
+  .status-line.found { color: var(--accent); }
 
   /* Table */
   .map-label {
@@ -88,7 +90,7 @@
     font-weight: 700;
     letter-spacing: .1em;
     text-transform: uppercase;
-    color: #ff6000;
+    color: var(--accent);
     margin-bottom: 12px;
   }
 
@@ -100,25 +102,25 @@
   th {
     text-align: left;
     padding: 10px 14px;
-    border-bottom: 2px solid #333;
+    border-bottom: 2px solid var(--border);
     font-size: 16px;
     font-weight: 700;
     letter-spacing: .08em;
     text-transform: uppercase;
-    color: #ff6000;
+    color: var(--accent);
   }
 
   td {
     padding: 14px;
-    border-bottom: 1px solid #222;
+    border-bottom: 1px solid var(--border);
     font-size: 22px;
     font-weight: 600;
-    color: #fff;
+    color: var(--text);
   }
 
-  tr.hit td { background: #1f0e00; }
-  tr.hit td:first-child { color: #ff6000; }
-  tr.hit td:last-child  { color: #fff; }
+  tr.hit td { background: var(--accent-bg); }
+  tr.hit td:first-child { color: var(--accent); }
+  tr.hit td:last-child  { color: var(--text); }
 </style>
 </head>
 <body>

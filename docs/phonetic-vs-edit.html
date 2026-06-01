@@ -4,14 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Phonetic vs Edit Distance</title>
+
+<link rel="stylesheet" href="theme.css">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap');
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
-    background: #0d0d0d;
-    color: #fff;
+    background: var(--bg);
+    color: var(--text);
     font-family: 'IBM Plex Mono', monospace;
     display: flex;
     align-items: center;
@@ -23,16 +25,16 @@
   .card {
     width: 100%;
     max-width: 780px;
-    background: #111;
-    border: 2px solid #ff6000;
+    background: var(--card);
+    border: 2px solid var(--accent);
   }
 
   .card-header {
     padding: 20px 24px;
-    border-bottom: 2px solid #ff6000;
+    border-bottom: 2px solid var(--accent);
   }
 
-  .title { font-size: 26px; font-weight: 700; color: #ff6000; letter-spacing: .04em; }
+  .title { font-size: 26px; font-weight: 700; color: var(--accent); letter-spacing: .04em; }
 
   .body { padding: 28px 24px; }
 
@@ -49,13 +51,13 @@
     font-size: 28px;
     font-weight: 700;
     padding: 12px 20px;
-    border: 2px solid #333;
-    background: #1a1a1a;
+    border: 2px solid var(--border);
+    background: var(--surface);
   }
 
-  .word.canonical { color: #ff6000; border-color: #ff6000; }
-  .word.stt       { color: #fff; }
-  .sep { font-size: 28px; color: #fff; }
+  .word.canonical { color: var(--accent); border-color: var(--accent); }
+  .word.stt       { color: var(--text); }
+  .sep { font-size: 28px; color: var(--text); }
 
   /* Cols */
   .cols {
@@ -65,20 +67,20 @@
   }
 
   .metric {
-    border: 2px solid #333;
-    background: #1a1a1a;
+    border: 2px solid var(--border);
+    background: var(--surface);
     padding: 20px;
   }
 
   .metric-name { font-size: 20px; font-weight: 700; margin-bottom: 16px; }
-  .metric.bad  .metric-name { color: #fff; }
-  .metric.good .metric-name { color: #ff6000; }
+  .metric.bad  .metric-name { color: var(--text); }
+  .metric.good .metric-name { color: var(--accent); }
 
   /* Bar */
   .bar-track {
     height: 44px;
-    background: #0d0d0d;
-    border: 2px solid #333;
+    background: var(--bg);
+    border: 2px solid var(--border);
     position: relative;
     margin-bottom: 12px;
     overflow: hidden;
@@ -91,8 +93,8 @@
     transition: width 1.3s cubic-bezier(.16,1,.3,1);
   }
 
-  .bar-fill.bad  { background: #5c1a1a; border-right: 3px solid #cc2200; }
-  .bar-fill.good { background: #ff6000; }
+  .bar-fill.bad  { background: var(--bad-bar); border-right: 3px solid var(--bad); }
+  .bar-fill.good { background: var(--accent); }
 
   .bar-pct {
     position: absolute;
@@ -104,8 +106,8 @@
     font-weight: 700;
   }
 
-  .metric.bad  .bar-pct { color: #cc2200; }
-  .metric.good .bar-pct { color: #000; }
+  .metric.bad  .bar-pct { color: var(--bad); }
+  .metric.good .bar-pct { color: var(--accent-on); }
 
   .verdict {
     font-size: 18px;
@@ -114,8 +116,8 @@
     text-transform: uppercase;
   }
 
-  .metric.bad  .verdict { color: #cc2200; }
-  .metric.good .verdict { color: #ff6000; }
+  .metric.bad  .verdict { color: var(--bad); }
+  .metric.good .verdict { color: var(--accent); }
 </style>
 </head>
 <body>

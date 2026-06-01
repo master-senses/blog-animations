@@ -4,14 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Latency Comparison</title>
+
+<link rel="stylesheet" href="theme.css">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap');
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
-    background: #0d0d0d;
-    color: #fff;
+    background: var(--bg);
+    color: var(--text);
     font-family: 'IBM Plex Mono', monospace;
     display: flex;
     align-items: center;
@@ -23,16 +25,16 @@
   .card {
     width: 100%;
     max-width: 780px;
-    background: #111;
-    border: 2px solid #ff6000;
+    background: var(--card);
+    border: 2px solid var(--accent);
   }
 
   .card-header {
     padding: 20px 24px;
-    border-bottom: 2px solid #ff6000;
+    border-bottom: 2px solid var(--accent);
   }
 
-  .title { font-size: 26px; font-weight: 700; color: #ff6000; letter-spacing: .04em; }
+  .title { font-size: 26px; font-weight: 700; color: var(--accent); letter-spacing: .04em; }
 
   .body { padding: 28px 24px; display: flex; flex-direction: column; gap: 24px; }
 
@@ -45,15 +47,15 @@
     margin-bottom: 10px;
   }
 
-  .tl-name { font-size: 20px; font-weight: 700; color: #fff; }
+  .tl-name { font-size: 20px; font-weight: 700; color: var(--text); }
   .tl-time { font-size: 40px; font-weight: 700; min-width: 100px; text-align: right; }
-  .tl.slow .tl-time { color: #cc2200; }
-  .tl.fast .tl-time { color: #ff6000; }
+  .tl.slow .tl-time { color: var(--bad); }
+  .tl.fast .tl-time { color: var(--accent); }
 
   .tl-track {
     height: 48px;
-    background: #0d0d0d;
-    border: 2px solid #333;
+    background: var(--bg);
+    border: 2px solid var(--border);
     position: relative;
     overflow: hidden;
   }
@@ -71,12 +73,12 @@
     overflow: hidden;
   }
 
-  .tl.slow .tl-bar { background: #3a0a0a; border-right: 3px solid #cc2200; color: #cc2200; }
-  .tl.fast .tl-bar { background: #ff6000; color: #000; }
+  .tl.slow .tl-bar { background: var(--bad-bg); border-right: 3px solid var(--bad); color: var(--bad); }
+  .tl.fast .tl-bar { background: var(--accent); color: var(--accent-on); }
 
-  .tl-label { margin-top: 10px; font-size: 18px; color: #fff; font-weight: 600; }
-  .tl.slow .tl-label em { color: #ff4444; font-style: normal; font-weight: 700; }
-  .tl.fast .tl-label em { color: #ff6000; font-style: normal; font-weight: 700; }
+  .tl-label { margin-top: 10px; font-size: 18px; color: var(--text); font-weight: 600; }
+  .tl.slow .tl-label em { color: var(--bad); font-style: normal; font-weight: 700; }
+  .tl.fast .tl-label em { color: var(--accent); font-style: normal; font-weight: 700; }
 
   .badge {
     display: flex;
@@ -88,8 +90,8 @@
     font-size: 24px;
     font-weight: 700;
     padding: 12px 28px;
-    background: #ff6000;
-    color: #000;
+    background: var(--accent);
+    color: var(--accent-on);
     letter-spacing: .05em;
     opacity: 0;
     transform: scale(.95);
