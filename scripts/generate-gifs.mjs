@@ -72,12 +72,14 @@ function framesToGif(frames, delayMs) {
   return Buffer.from(gif.bytes())
 }
 
-async function capturePage(browser, spec) {
+async function capturePage(browser, spec, colorScheme = 'light') {
   const page = await browser.newPage({
     viewport: { width: 860, height: 700 },
     deviceScaleFactor: 1,
+    colorScheme,
   })
 
+  await page.emulateMedia({ colorScheme })
   await page.goto(`http://127.0.0.1:${PORT}/${spec.file}`, { waitUntil: 'networkidle' })
   await page.waitForTimeout(800)
 
@@ -96,6 +98,10 @@ async function capturePage(browser, spec) {
 }
 
 async function main() {
+  const colorScheme =
+    process.argv.includes('--dark') ? 'dark' : 'light'
+  console.log(`Color scheme: ${colorScheme}\n`)
+
   mkdirSync(OUT, { recursive: true })
   mkdirSync(DOCS_GIFS, { recursive: true })
   const server = await startServer()
@@ -104,7 +110,7 @@ async function main() {
   try {
     for (const spec of PAGES) {
       process.stdout.write(`Capturing ${spec.file}… `)
-      const gif = await capturePage(browser, spec)
+      const gif = await capturePage(browser, spec, colorScheme)
       const outPath = join(OUT, spec.out)
       writeFileSync(outPath, gif)
       writeFileSync(join(DOCS_GIFS, spec.out), gif)

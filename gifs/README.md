@@ -10,7 +10,7 @@ npm run generate-gifs
 
 HTML animations follow your system theme (`prefers-color-scheme: light`). Open any `.html` URL in a light-mode browser to preview.
 
-The GIFs in this folder were captured in **dark mode**. Run `npm run generate-gifs` after switching your Mac to Light Appearance if you want light GIFs.
+GIFs are captured in **light mode** by default. For dark GIFs: `npm run generate-gifs -- --dark`
 
 ## Upload in Substack
 
