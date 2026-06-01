@@ -10,7 +10,7 @@ npm run generate-gifs
 
 HTML animations follow your system theme (`prefers-color-scheme: light`). Open any `.html` URL in a light-mode browser to preview.
 
-GIFs are captured in **light mode** by default. For dark GIFs: `npm run generate-gifs -- --dark`
+GIFs are captured in **dark mode** by default. For light GIFs: `npm run generate-gifs -- --light`
 
 ## Upload in Substack
 

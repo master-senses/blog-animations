@@ -72,7 +72,7 @@ function framesToGif(frames, delayMs) {
   return Buffer.from(gif.bytes())
 }
 
-async function capturePage(browser, spec, colorScheme = 'light') {
+async function capturePage(browser, spec, colorScheme = 'dark') {
   const page = await browser.newPage({
     viewport: { width: 860, height: 700 },
     deviceScaleFactor: 1,
@@ -99,7 +99,7 @@ async function capturePage(browser, spec, colorScheme = 'light') {
 
 async function main() {
   const colorScheme =
-    process.argv.includes('--dark') ? 'dark' : 'light'
+    process.argv.includes('--light') ? 'light' : 'dark'
   console.log(`Color scheme: ${colorScheme}\n`)
 
   mkdirSync(OUT, { recursive: true })
