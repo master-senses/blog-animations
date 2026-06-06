@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "generate-gifs": "node scripts/generate-gifs.mjs"
+    "generate-gifs": "node scripts/generate-gifs.mjs",
+    "render-diagram": "python3 scripts/render-excalidraw.py diagrams/stt-options-rejected.excalidraw"
   },
   "dependencies": {
     "react": "^19.2.6",
