@@ -1,6 +1,6 @@
-/* Dark default, light via system preference */
+/* Keep embeds dark and opaque so white host pages cannot wash out text. */
 :root {
-  color-scheme: light dark;
+  color-scheme: dark;
   --bg: #0d0d0d;
   --card: #111;
   --surface: #1a1a1a;
@@ -20,25 +20,4 @@
   --badge-inactive-bg: #333;
   --badge-inactive-fg: #fff;
   --drop: #888;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    --bg: #f2f2f2;
-    --card: #fff;
-    --surface: #f0f0f0;
-    --border: #d8d8d8;
-    --border-soft: #ccc;
-    --text: #111;
-    --text-soft: #222;
-    --accent-bg: #fff0e6;
-    --dot: #ddd;
-    --dot-done: #ffb380;
-    --bad-bg: #ffe8e8;
-    --bad-bar: #ffcccc;
-    --track: #e8e8e8;
-    --badge-inactive-bg: #e0e0e0;
-    --badge-inactive-fg: #111;
-    --drop: #bbb;
-  }
 }

@@ -61,8 +61,6 @@ function framesToGif(frames, delayMs) {
       palette,
       delay: delayMs,
       repeat: 0,
-      transparent: true,
-      transparentIndex: 0,
       ...(first ? { first: true } : {}),
     })
     first = false
