@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Context Window Bloat</title>
+<link rel="stylesheet" href="theme.css">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 24px;
+  }
+  .card {
+    width: 100%;
+    max-width: 780px;
+    background: var(--card);
+    border: 2px solid var(--accent);
+  }
+  .card-header {
+    padding: 20px 24px;
+    border-bottom: 2px solid var(--accent);
+  }
+  .title { font-size: 26px; font-weight: 700; color: var(--accent); letter-spacing: .04em; }
+  .body { padding: 28px 24px; display: flex; flex-direction: column; gap: 22px; }
+
+  .meter-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .meter-label .pct { color: var(--accent); font-size: 20px; }
+  .meter-label .name { color: var(--text-soft); }
+
+  .track {
+    height: 36px;
+    background: var(--track);
+    border: 2px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .fill {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 0;
+    transition: width 1.2s cubic-bezier(.4,0,.2,1);
+    display: flex;
+    align-items: center;
+    padding-left: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  .fill.tools { background: var(--accent-bg); border-right: 3px solid var(--accent); color: var(--accent); }
+  .fill.output { background: var(--bad-bg); border-right: 3px solid var(--bad); color: var(--bad); }
+
+  .ctx-box {
+    border: 2px solid var(--border);
+    background: var(--surface);
+    min-height: 120px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+  }
+  .ctx-title {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  .ctx-line {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-soft);
+    opacity: 1;
+    transition: opacity .5s, transform .5s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .ctx-line.evicted {
+    opacity: 0.2;
+    text-decoration: line-through;
+    color: var(--drop);
+  }
+  .ctx-line.bloat {
+    color: var(--bad);
+    font-size: 13px;
+    white-space: normal;
+    line-height: 1.35;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height .8s, opacity .6s;
+  }
+  .ctx-line.bloat.visible {
+    max-height: 80px;
+    opacity: 1;
+  }
+
+  .status {
+    text-align: center;
+    font-size: 20px;
+    font-weight: 700;
+    min-height: 28px;
+    color: var(--text);
+  }
+  .status.warn { color: var(--bad); }
+  .status.done { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="card-header">
+    <div class="title">CONTEXT WINDOW</div>
+  </div>
+  <div class="body">
+    <div>
+      <div class="meter-label">
+        <span class="name">Tool schemas (47 MCP tools)</span>
+        <span class="pct" id="pct-tools">0%</span>
+      </div>
+      <div class="track"><div class="fill tools" id="fill-tools">github.create_pr · slack.post · …</div></div>
+    </div>
+
+    <div>
+      <div class="meter-label">
+        <span class="name">Tool output (get_logs)</span>
+        <span class="pct" id="pct-output">0%</span>
+      </div>
+      <div class="track"><div class="fill output" id="fill-output">[ERROR] connection reset …</div></div>
+    </div>
+
+    <div class="ctx-box">
+      <div class="ctx-title">Agent context</div>
+      <div class="ctx-line" id="l1">user: fix the failing deploy</div>
+      <div class="ctx-line" id="l2">assistant: checking logs…</div>
+      <div class="ctx-line bloat" id="l3">tool: 2026-07-14 ERROR pod/nginx OOMKilled stacktrace at 0x4f2… (847 lines)</div>
+    </div>
+
+    <div class="status" id="status">loading MCP tool definitions…</div>
+  </div>
+</div>
+
+<script>
+  const fillTools = document.getElementById('fill-tools');
+  const fillOutput = document.getElementById('fill-output');
+  const pctTools = document.getElementById('pct-tools');
+  const pctOutput = document.getElementById('pct-output');
+  const status = document.getElementById('status');
+  const l1 = document.getElementById('l1');
+  const l2 = document.getElementById('l2');
+  const l3 = document.getElementById('l3');
+
+  function setPct(el, pctEl, v) {
+    el.style.width = v + '%';
+    pctEl.textContent = v + '%';
+  }
+
+  function reset() {
+    fillTools.style.transition = fillOutput.style.transition = 'none';
+    setPct(fillTools, pctTools, 0);
+    setPct(fillOutput, pctOutput, 0);
+    l1.classList.remove('evicted');
+    l2.classList.remove('evicted');
+    l3.classList.remove('visible');
+    status.className = 'status';
+    status.textContent = 'loading MCP tool definitions…';
+    void fillTools.offsetWidth;
+    fillTools.style.transition = fillOutput.style.transition = 'width 1.2s cubic-bezier(.4,0,.2,1)';
+  }
+
+  function run() {
+    reset();
+
+    setTimeout(() => {
+      setPct(fillTools, pctTools, 42);
+      status.textContent = 'tool schemas consume context';
+    }, 600);
+
+    setTimeout(() => {
+      setPct(fillOutput, pctOutput, 58);
+      l3.classList.add('visible');
+      status.textContent = 'verbose tool output spikes usage';
+      status.className = 'status warn';
+    }, 2200);
+
+    setTimeout(() => {
+      l1.classList.add('evicted');
+      l2.classList.add('evicted');
+      status.textContent = 'earlier conversation evicted';
+      status.className = 'status warn';
+    }, 3800);
+
+    setTimeout(() => {
+      status.textContent = '100% — context full';
+      status.className = 'status done';
+    }, 4800);
+
+    setTimeout(run, 7200);
+  }
+  run();
+</script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+/* Keep embeds dark and opaque so white host pages cannot wash out text. */
+:root {
+  color-scheme: dark;
+  --bg: #0d0d0d;
+  --card: #111;
+  --surface: #1a1a1a;
+  --border: #333;
+  --border-soft: #444;
+  --text: #fff;
+  --text-soft: #e8e8e8;
+  --accent: #ff6000;
+  --accent-bg: #1f0e00;
+  --accent-on: #000;
+  --dot: #333;
+  --dot-done: #663000;
+  --bad: #cc2200;
+  --bad-bg: #3a0a0a;
+  --bad-bar: #5c1a1a;
+  --track: #0d0d0d;
+  --badge-inactive-bg: #333;
+  --badge-inactive-fg: #fff;
+  --drop: #888;
+}

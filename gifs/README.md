@@ -25,6 +25,10 @@ After deploy, images are also at:
 - https://master-senses.github.io/blog-animations/gifs/phonetic-vs-edit.gif
 - https://master-senses.github.io/blog-animations/gifs/pipeline-latency.gif
 - https://master-senses.github.io/blog-animations/gifs/acronym-hashmap.gif
+- https://master-senses.github.io/blog-animations/gifs/context-window.gif
+- https://master-senses.github.io/blog-animations/gifs/lazy-load-progression.gif
+- https://master-senses.github.io/blog-animations/gifs/sandbox-chaining.gif
+- https://master-senses.github.io/blog-animations/gifs/cli-mcp-stack.png
 
 ## Files
 
@@ -35,3 +39,12 @@ After deploy, images are also at:
 | `phonetic-vs-edit.gif` | Edit distance vs Metaphone |
 | `pipeline-latency.gif` | Whisper vs Web API latency |
 | `acronym-hashmap.gif` | Acronym HashMap lookup |
+| `context-window.gif` | MCP context window bloat (tools + output) |
+| `lazy-load-progression.gif` | Lazy load → filesystem → search_tool |
+| `sandbox-chaining.gif` | execute_tool sandbox chaining |
+
+## Static PNGs
+
+| File | Diagram |
+|------|---------|
+| `cli-mcp-stack.png` | CLI vs MCP — same API stack |

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lazy Load Progression</title>
+<link rel="stylesheet" href="theme.css">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 24px;
+  }
+  .card {
+    width: 100%;
+    max-width: 780px;
+    background: var(--card);
+    border: 2px solid var(--accent);
+  }
+  .card-header {
+    padding: 20px 24px;
+    border-bottom: 2px solid var(--accent);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+  }
+  .title { font-size: 26px; font-weight: 700; color: var(--accent); letter-spacing: .04em; }
+  .phase {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--text-soft);
+  }
+  .body { padding: 24px; min-height: 380px; }
+
+  .panel { display: none; flex-direction: column; gap: 14px; }
+  .panel.active { display: flex; }
+
+  .prompt {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-soft);
+    padding: 10px 14px;
+    border: 2px solid var(--border);
+    background: var(--surface);
+  }
+  .prompt em { color: var(--accent); font-style: normal; font-weight: 700; }
+
+  .tools-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+  .tool {
+    padding: 10px 8px;
+    border: 2px solid var(--border);
+    background: var(--surface);
+    font-size: 11px;
+    font-weight: 700;
+    text-align: center;
+    color: var(--text);
+    opacity: 0;
+    transform: scale(.9);
+    transition: opacity .3s, transform .3s, border-color .3s, background .3s;
+  }
+  .tool.show { opacity: 1; transform: scale(1); }
+  .tool.hit { border-color: var(--accent); background: var(--accent-bg); color: var(--accent); }
+  .tool.dim { opacity: .25; }
+
+  .fs {
+    border: 2px solid var(--border);
+    background: var(--surface);
+    padding: 14px;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.7;
+    color: var(--text-soft);
+  }
+  .fs .dir { color: var(--accent); font-weight: 700; }
+  .fs .file { padding-left: 16px; }
+  .fs .file.open { color: var(--accent); background: var(--accent-bg); display: inline-block; padding: 2px 6px; }
+
+  .search-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 10px;
+    align-items: center;
+  }
+  .search-box {
+    padding: 12px 14px;
+    border: 2px solid var(--accent);
+    background: var(--accent-bg);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .search-btn {
+    padding: 12px 16px;
+    border: 2px solid var(--accent);
+    background: var(--accent);
+    color: var(--accent-on);
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .count {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--accent);
+    text-align: center;
+    min-height: 24px;
+  }
+
+  .footer {
+    margin-top: 8px;
+    padding: 12px 14px;
+    border: 2px solid var(--border);
+    background: var(--surface);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-soft);
+    text-align: center;
+    min-height: 48px;
+  }
+  .footer.warn {
+    border-color: var(--bad);
+    background: var(--bad-bg);
+    color: var(--bad);
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="card-header">
+    <div class="title">TOOL DISCOVERY</div>
+    <div class="phase" id="phase-label">ALL TOOLS LOADED</div>
+  </div>
+  <div class="body">
+    <div class="panel active" id="p0">
+      <div class="prompt">user: <em>merge my PR and post to slack</em></div>
+      <div class="tools-grid" id="grid-all"></div>
+      <div class="count" id="c0">47 tools in context</div>
+    </div>
+
+    <div class="panel" id="p1">
+      <div class="prompt">user: <em>merge my PR</em> → lazy-load github MCP</div>
+      <div class="tools-grid" id="grid-lazy"></div>
+      <div class="count" id="c1">6 tools in context</div>
+    </div>
+
+    <div class="panel" id="p2">
+      <div class="prompt">agent explores filesystem…</div>
+      <div class="fs">
+        <div class="dir">tools/</div>
+        <div class="file">├── github/</div>
+        <div class="file open">│   └── merge_pr.md</div>
+        <div class="file">├── slack/</div>
+        <div class="file">└── datadog/</div>
+      </div>
+      <div class="count" id="c2">1 tool file opened</div>
+    </div>
+
+    <div class="panel" id="p3">
+      <div class="search-row">
+        <div class="search-box" id="query">merge pull request</div>
+        <div class="search-btn">search_tool</div>
+      </div>
+      <div class="tools-grid" id="grid-search"></div>
+      <div class="count" id="c3">2 matches returned</div>
+    </div>
+
+    <div class="footer" id="footer">fewer tools in context</div>
+  </div>
+</div>
+
+<script>
+  const ALL_TOOLS = [
+    'gh.pr','gh.issue','gh.merge','gh.review','gh.branch','gh.tag',
+    'slack.post','slack.read','slack.react','slack.pin',
+    'dd.logs','dd.metrics','dd.alert','dd.dashboard',
+    'jira.create','jira.update','jira.search','jira.comment',
+    's3.get','s3.put','s3.list','s3.delete',
+    'k8s.get','k8s.logs','k8s.scale','k8s.roll',
+    'sql.query','sql.schema','sql.export',
+    'auth.token','auth.refresh','auth.scope',
+    'npm.install','npm.publish','npm.search',
+    'docker.build','docker.push','docker.pull',
+    'cf.deploy','cf.dns','cf.cache',
+    'linear.issue','linear.cycle','linear.team',
+    'notion.page','notion.db','notion.search',
+    'stripe.charge','stripe.refund'
+  ];
+  const LAZY = ['gh.pr','gh.merge','gh.review','gh.branch','gh.issue','gh.tag'];
+  const SEARCH = ['gh.merge','gh.pr'];
+
+  function makeGrid(el, tools, opts = {}) {
+    el.innerHTML = '';
+    tools.forEach((t, i) => {
+      const d = document.createElement('div');
+      d.className = 'tool';
+      d.textContent = t;
+      if (opts.hit && opts.hit.includes(t)) d.classList.add('hit');
+      if (opts.dim && !opts.hit.includes(t)) d.classList.add('dim');
+      el.appendChild(d);
+      setTimeout(() => d.classList.add('show'), opts.stagger ? i * 40 : i * 25);
+    });
+  }
+
+  const panels = [0,1,2,3].map(i => document.getElementById('p' + i));
+  const phaseLabel = document.getElementById('phase-label');
+  const footer = document.getElementById('footer');
+  let step = 0;
+
+  function showPanel(n, label) {
+    panels.forEach((p, i) => p.classList.toggle('active', i === n));
+    phaseLabel.textContent = label;
+  }
+
+  function run() {
+    step = 0;
+    footer.className = 'footer';
+    footer.textContent = 'fewer tools in context';
+
+    showPanel(0, 'ALL TOOLS LOADED');
+    makeGrid(document.getElementById('grid-all'), ALL_TOOLS);
+
+    setTimeout(() => {
+      showPanel(1, 'LAZY LOADING');
+      makeGrid(document.getElementById('grid-lazy'), ALL_TOOLS, { hit: LAZY, dim: true, stagger: true });
+    }, 2800);
+
+    setTimeout(() => {
+      showPanel(2, 'FILESYSTEM MCP');
+    }, 5600);
+
+    setTimeout(() => {
+      showPanel(3, 'SEARCH_TOOL');
+      makeGrid(document.getElementById('grid-search'), SEARCH, { hit: SEARCH });
+    }, 8400);
+
+    setTimeout(() => {
+      footer.className = 'footer warn';
+      footer.textContent = 'fewer tools in context — but verbose output bloat remains';
+    }, 10800);
+
+    setTimeout(run, 13200);
+  }
+
+  makeGrid(document.getElementById('grid-all'), ALL_TOOLS);
+  run();
+</script>
+</body>
+</html>

@@ -19,6 +19,9 @@ const PAGES = [
   { file: 'phonetic-vs-edit.html', out: 'phonetic-vs-edit.gif', durationMs: 6000, intervalMs: 200 },
   { file: 'pipeline-latency.html', out: 'pipeline-latency.gif', durationMs: 7000, intervalMs: 200 },
   { file: 'acronym-hashmap.html', out: 'acronym-hashmap.gif', durationMs: 12000, intervalMs: 200 },
+  { file: 'context-window.html', out: 'context-window.gif', durationMs: 8000, intervalMs: 200 },
+  { file: 'lazy-load-progression.html', out: 'lazy-load-progression.gif', durationMs: 14000, intervalMs: 200 },
+  { file: 'sandbox-chaining.html', out: 'sandbox-chaining.gif', durationMs: 8000, intervalMs: 200 },
 ]
 
 const MIME = {

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sandbox Tool Chaining</title>
+<link rel="stylesheet" href="theme.css">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 24px;
+  }
+  .card {
+    width: 100%;
+    max-width: 780px;
+    background: var(--card);
+    border: 2px solid var(--accent);
+  }
+  .card-header {
+    padding: 20px 24px;
+    border-bottom: 2px solid var(--accent);
+  }
+  .title { font-size: 26px; font-weight: 700; color: var(--accent); letter-spacing: .04em; }
+  .body { padding: 28px 24px; display: flex; flex-direction: column; gap: 20px; }
+
+  .sandbox {
+    border: 3px dashed var(--accent);
+    background: var(--accent-bg);
+    padding: 22px 20px;
+    position: relative;
+  }
+  .sandbox-label {
+    position: absolute;
+    top: -12px;
+    left: 16px;
+    background: var(--card);
+    padding: 0 8px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .chain {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    min-height: 72px;
+  }
+  .node {
+    padding: 12px 14px;
+    border: 2px solid var(--border);
+    background: var(--surface);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    opacity: .2;
+    transform: translateY(6px);
+    transition: opacity .45s, transform .45s, border-color .45s, background .45s;
+  }
+  .node.on {
+    opacity: 1;
+    transform: translateY(0);
+    border-color: var(--accent);
+    background: var(--card);
+    color: var(--accent);
+  }
+  .arrow {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--drop);
+    opacity: .2;
+    transition: opacity .45s, color .45s;
+  }
+  .arrow.on { opacity: 1; color: var(--accent); }
+
+  .internal-data {
+    margin-top: 14px;
+    padding: 12px;
+    border: 2px solid var(--border);
+    background: var(--bg);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--drop);
+    line-height: 1.5;
+    min-height: 54px;
+    opacity: 0;
+    transition: opacity .5s;
+  }
+  .internal-data.on { opacity: 1; }
+
+  .context-out {
+    border: 2px solid var(--border);
+    background: var(--surface);
+    padding: 18px 20px;
+  }
+  .ctx-label {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  .ctx-result {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    min-height: 32px;
+    opacity: .3;
+    transition: opacity .5s, color .5s;
+  }
+  .ctx-result.on {
+    opacity: 1;
+    color: var(--accent);
+  }
+
+  .status {
+    text-align: center;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-soft);
+    min-height: 22px;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="card-header">
+    <div class="title">EXECUTE_TOOL SANDBOX</div>
+  </div>
+  <div class="body">
+    <div class="sandbox">
+      <div class="sandbox-label">sandbox — intermediate data stays here</div>
+      <div class="chain">
+        <div class="node" id="n0">get_incidents()</div>
+        <div class="arrow" id="a0">→</div>
+        <div class="node" id="n1">.filter(sev=1)</div>
+        <div class="arrow" id="a1">→</div>
+        <div class="node" id="n2">get_owner()</div>
+        <div class="arrow" id="a2">→</div>
+        <div class="node" id="n3">summary()</div>
+      </div>
+      <div class="internal-data" id="internal">
+        847 incidents fetched → 3 sev-1 matches → owner lookup for INC-4421, INC-4418, INC-4402
+      </div>
+    </div>
+
+    <div class="status" id="status">agent writes code…</div>
+
+    <div class="context-out">
+      <div class="ctx-label">Agent context receives</div>
+      <div class="ctx-result" id="result">…</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const nodes = [0,1,2,3].map(i => document.getElementById('n' + i));
+  const arrows = [0,1,2].map(i => document.getElementById('a' + i));
+  const internal = document.getElementById('internal');
+  const result = document.getElementById('result');
+  const status = document.getElementById('status');
+
+  function reset() {
+    nodes.forEach(n => n.classList.remove('on'));
+    arrows.forEach(a => a.classList.remove('on'));
+    internal.classList.remove('on');
+    result.classList.remove('on');
+    result.textContent = '…';
+    status.textContent = 'agent writes code…';
+  }
+
+  function run() {
+    reset();
+
+    setTimeout(() => { nodes[0].classList.add('on'); status.textContent = 'tool A returns 847 rows'; }, 500);
+    setTimeout(() => { arrows[0].classList.add('on'); nodes[1].classList.add('on'); }, 1100);
+    setTimeout(() => {
+      internal.classList.add('on');
+      status.textContent = 'filter runs inside sandbox';
+    }, 1700);
+    setTimeout(() => { arrows[1].classList.add('on'); nodes[2].classList.add('on'); }, 2300);
+    setTimeout(() => { arrows[2].classList.add('on'); nodes[3].classList.add('on'); }, 2900);
+    setTimeout(() => {
+      result.textContent = '3 open sev-1 incidents — owners: alice, bob, carol';
+      result.classList.add('on');
+      status.textContent = 'only the summary hits context';
+    }, 3600);
+
+    setTimeout(run, 7200);
+  }
+  run();
+</script>
+</body>
+</html>
