@@ -20,7 +20,7 @@
   }
   .card {
     width: 100%;
-    max-width: 780px;
+    max-width: 820px;
     background: var(--card);
     border: 2px solid var(--accent);
   }
@@ -40,7 +40,7 @@
     text-transform: uppercase;
     color: var(--text-soft);
   }
-  .body { padding: 24px; min-height: 420px; }
+  .body { padding: 24px; min-height: 460px; }
 
   .panel { display: none; flex-direction: column; gap: 16px; }
   .panel.active { display: flex; }
@@ -76,27 +76,16 @@
   .tool.hit { border-color: var(--accent); background: var(--accent-bg); color: var(--accent); }
   .tool.dim { opacity: .25; }
 
-  /* Phase 2: both discovery methods stacked vertically, full width, generous spacing */
-  .dual {
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-  }
   .method {
-    border: 2px solid var(--border);
-    background: var(--surface);
-    padding: 22px 24px;
+    border: 2px solid var(--accent);
+    background: var(--accent-bg);
+    padding: 18px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    transition: border-color .4s, background .4s;
-  }
-  .method.active {
-    border-color: var(--accent);
-    background: var(--accent-bg);
+    gap: 14px;
   }
   .method-label {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 700;
     letter-spacing: .08em;
     text-transform: uppercase;
@@ -104,13 +93,13 @@
   }
 
   .fs {
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 600;
     line-height: 1.9;
     color: var(--text-soft);
   }
   .fs .dir { color: var(--accent); font-weight: 700; }
-  .fs .file { padding-left: 16px; }
+  .fs .file { padding-left: 14px; }
   .fs .file.open {
     color: var(--accent);
     background: var(--card);
@@ -125,7 +114,7 @@
     align-items: center;
   }
   .search-box {
-    padding: 13px 16px;
+    padding: 12px 14px;
     border: 2px solid var(--accent);
     background: var(--card);
     font-size: 15px;
@@ -133,31 +122,13 @@
     color: var(--accent);
   }
   .search-btn {
-    padding: 13px 18px;
+    padding: 12px 16px;
     border: 2px solid var(--accent);
     background: var(--accent);
     color: var(--accent-on);
     font-size: 13px;
     font-weight: 700;
   }
-
-  .matches-row {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
-  .match-pill {
-    padding: 11px 18px;
-    border: 2px solid var(--accent);
-    background: var(--accent-bg);
-    color: var(--accent);
-    font-size: 14px;
-    font-weight: 700;
-    opacity: 0;
-    transform: scale(.9);
-    transition: opacity .3s, transform .3s;
-  }
-  .match-pill.show { opacity: 1; transform: scale(1); }
 
   .count {
     font-size: 16px;
@@ -166,10 +137,9 @@
     text-align: center;
     min-height: 22px;
   }
-  .method .count { text-align: left; margin-top: -4px; }
 
   .footer {
-    margin-top: 18px;
+    margin-top: 8px;
     padding: 12px 14px;
     border: 2px solid var(--border);
     background: var(--surface);
@@ -206,30 +176,37 @@
     </div>
 
     <div class="panel" id="p2">
-      <div class="prompt">agent discovers tools on demand…</div>
-      <div class="dual">
-        <div class="method" id="method-fs">
-          <div class="method-label">Filesystem MCP</div>
-          <div class="fs">
-            <div class="dir">tools/</div>
-            <div class="file">├── github/</div>
-            <div class="file open">│   └── merge_pr.md</div>
-            <div class="file">├── slack/</div>
-            <div class="file">└── datadog/</div>
-          </div>
-          <div class="count">1 tool file opened</div>
-        </div>
-
-        <div class="method" id="method-search">
-          <div class="method-label">search_tool</div>
-          <div class="search-row">
-            <div class="search-box">merge pull request</div>
-            <div class="search-btn">search</div>
-          </div>
-          <div class="matches-row" id="grid-search"></div>
-          <div class="count">2 matches returned</div>
+      <div class="prompt">agent explores the <em>filesystem MCP</em> on demand…</div>
+      <div class="method">
+        <div class="method-label">Filesystem MCP</div>
+        <div class="fs">
+          <div class="dir">tools/</div>
+          <div class="file">├── github/</div>
+          <div class="file open">│   └── merge_pr.md</div>
+          <div class="file">├── slack/</div>
+          <div class="file">└── datadog/</div>
         </div>
       </div>
+      <div class="count">1 tool file opened</div>
+    </div>
+
+    <div class="panel" id="p3">
+      <div class="prompt">agent queries the <em>search_tool</em> instead…</div>
+      <div class="method">
+        <div class="method-label">search_tool</div>
+        <div class="search-row">
+          <div class="search-box">merge pull request</div>
+          <div class="search-btn">search</div>
+        </div>
+        <div class="tools-grid" id="grid-search"></div>
+      </div>
+      <div class="count">2 matches returned</div>
+    </div>
+
+    <div class="panel" id="p4">
+      <div class="prompt">both methods skip loading every tool up front</div>
+      <div class="tools-grid" id="grid-final"></div>
+      <div class="count">2 tools in context, not 47</div>
     </div>
 
     <div class="footer" id="footer">fewer tools in context</div>
@@ -269,37 +246,18 @@
     });
   }
 
-  function makePills(el, tools) {
-    el.innerHTML = '';
-    tools.forEach((t, i) => {
-      const d = document.createElement('div');
-      d.className = 'match-pill';
-      d.textContent = t;
-      el.appendChild(d);
-      setTimeout(() => d.classList.add('show'), i * 80);
-    });
-  }
-
-  const panels = [0, 1, 2].map(i => document.getElementById('p' + i));
+  const panels = [0, 1, 2, 3, 4].map(i => document.getElementById('p' + i));
   const phaseLabel = document.getElementById('phase-label');
   const footer = document.getElementById('footer');
-  const methodFs = document.getElementById('method-fs');
-  const methodSearch = document.getElementById('method-search');
 
   function showPanel(n, label) {
     panels.forEach((p, i) => p.classList.toggle('active', i === n));
     phaseLabel.textContent = label;
   }
 
-  function highlightDual(which) {
-    methodFs.classList.toggle('active', which === 'fs' || which === 'both');
-    methodSearch.classList.toggle('active', which === 'search' || which === 'both');
-  }
-
   function run() {
     footer.className = 'footer';
     footer.textContent = 'fewer tools in context';
-    highlightDual('none');
 
     showPanel(0, 'ALL TOOLS LOADED');
     makeGrid(document.getElementById('grid-all'), ALL_TOOLS);
@@ -307,36 +265,31 @@
     setTimeout(() => {
       showPanel(1, 'LAZY LOADING');
       makeGrid(document.getElementById('grid-lazy'), ALL_TOOLS, { hit: LAZY, dim: true, stagger: true });
-    }, 2800);
+    }, 2600);
 
     setTimeout(() => {
-      showPanel(2, 'FILESYSTEM + SEARCH');
-      makePills(document.getElementById('grid-search'), SEARCH);
-      highlightDual('both');
-    }, 5600);
+      showPanel(2, 'FILESYSTEM MCP');
+    }, 5400);
 
     setTimeout(() => {
-      highlightDual('fs');
-    }, 7200);
+      showPanel(3, 'SEARCH_TOOL');
+      makeGrid(document.getElementById('grid-search'), SEARCH, { hit: SEARCH });
+    }, 8000);
 
     setTimeout(() => {
-      highlightDual('search');
-    }, 8400);
-
-    setTimeout(() => {
-      highlightDual('both');
-    }, 9600);
+      showPanel(4, 'RESULT');
+      makeGrid(document.getElementById('grid-final'), SEARCH, { hit: SEARCH });
+    }, 10600);
 
     setTimeout(() => {
       footer.className = 'footer warn';
       footer.textContent = 'fewer tools in context — but verbose output bloat remains';
-    }, 10800);
+    }, 12200);
 
-    setTimeout(run, 13200);
+    setTimeout(run, 14000);
   }
 
   makeGrid(document.getElementById('grid-all'), ALL_TOOLS);
-  makePills(document.getElementById('grid-search'), SEARCH);
   run();
 </script>
 </body>
