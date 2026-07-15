@@ -40,7 +40,7 @@
     text-transform: uppercase;
     color: var(--text-soft);
   }
-  .body { padding: 24px; min-height: 380px; }
+  .body { padding: 24px; min-height: 420px; }
 
   .panel { display: none; flex-direction: column; gap: 14px; }
   .panel.active { display: flex; }
@@ -76,48 +76,83 @@
   .tool.hit { border-color: var(--accent); background: var(--accent-bg); color: var(--accent); }
   .tool.dim { opacity: .25; }
 
-  .fs {
+  .dual {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .method {
     border: 2px solid var(--border);
     background: var(--surface);
     padding: 14px;
-    font-size: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    transition: border-color .4s, background .4s;
+  }
+  .method.active {
+    border-color: var(--accent);
+    background: var(--accent-bg);
+  }
+  .method-label {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .fs {
+    font-size: 13px;
     font-weight: 600;
     line-height: 1.7;
     color: var(--text-soft);
   }
   .fs .dir { color: var(--accent); font-weight: 700; }
-  .fs .file { padding-left: 16px; }
-  .fs .file.open { color: var(--accent); background: var(--accent-bg); display: inline-block; padding: 2px 6px; }
+  .fs .file { padding-left: 12px; }
+  .fs .file.open {
+    color: var(--accent);
+    background: var(--card);
+    display: inline-block;
+    padding: 2px 6px;
+  }
 
   .search-row {
     display: grid;
     grid-template-columns: 1fr auto;
-    gap: 10px;
+    gap: 8px;
     align-items: center;
   }
   .search-box {
-    padding: 12px 14px;
+    padding: 10px 12px;
     border: 2px solid var(--accent);
-    background: var(--accent-bg);
-    font-size: 16px;
+    background: var(--card);
+    font-size: 13px;
     font-weight: 700;
     color: var(--accent);
   }
   .search-btn {
-    padding: 12px 16px;
+    padding: 10px 12px;
     border: 2px solid var(--accent);
     background: var(--accent);
     color: var(--accent-on);
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 700;
+  }
+  .tools-grid.compact {
+    grid-template-columns: 1fr 1fr;
+  }
+  .tools-grid.compact .tool {
+    font-size: 12px;
+    padding: 8px;
   }
 
   .count {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 700;
     color: var(--accent);
     text-align: center;
-    min-height: 24px;
+    min-height: 22px;
   }
 
   .footer {
@@ -148,34 +183,40 @@
     <div class="panel active" id="p0">
       <div class="prompt">user: <em>merge my PR and post to slack</em></div>
       <div class="tools-grid" id="grid-all"></div>
-      <div class="count" id="c0">47 tools in context</div>
+      <div class="count">47 tools in context</div>
     </div>
 
     <div class="panel" id="p1">
       <div class="prompt">user: <em>merge my PR</em> → lazy-load github MCP</div>
       <div class="tools-grid" id="grid-lazy"></div>
-      <div class="count" id="c1">6 tools in context</div>
+      <div class="count">6 tools in context</div>
     </div>
 
     <div class="panel" id="p2">
-      <div class="prompt">agent explores filesystem…</div>
-      <div class="fs">
-        <div class="dir">tools/</div>
-        <div class="file">├── github/</div>
-        <div class="file open">│   └── merge_pr.md</div>
-        <div class="file">├── slack/</div>
-        <div class="file">└── datadog/</div>
-      </div>
-      <div class="count" id="c2">1 tool file opened</div>
-    </div>
+      <div class="prompt">agent discovers tools on demand…</div>
+      <div class="dual">
+        <div class="method" id="method-fs">
+          <div class="method-label">Filesystem MCP</div>
+          <div class="fs">
+            <div class="dir">tools/</div>
+            <div class="file">├── github/</div>
+            <div class="file open">│   └── merge_pr.md</div>
+            <div class="file">├── slack/</div>
+            <div class="file">└── datadog/</div>
+          </div>
+          <div class="count">1 tool file opened</div>
+        </div>
 
-    <div class="panel" id="p3">
-      <div class="search-row">
-        <div class="search-box" id="query">merge pull request</div>
-        <div class="search-btn">search_tool</div>
+        <div class="method" id="method-search">
+          <div class="method-label">search_tool</div>
+          <div class="search-row">
+            <div class="search-box">merge pull request</div>
+            <div class="search-btn">search</div>
+          </div>
+          <div class="tools-grid compact" id="grid-search"></div>
+          <div class="count">2 matches returned</div>
+        </div>
       </div>
-      <div class="tools-grid" id="grid-search"></div>
-      <div class="count" id="c3">2 matches returned</div>
     </div>
 
     <div class="footer" id="footer">fewer tools in context</div>
@@ -215,20 +256,26 @@
     });
   }
 
-  const panels = [0,1,2,3].map(i => document.getElementById('p' + i));
+  const panels = [0, 1, 2].map(i => document.getElementById('p' + i));
   const phaseLabel = document.getElementById('phase-label');
   const footer = document.getElementById('footer');
-  let step = 0;
+  const methodFs = document.getElementById('method-fs');
+  const methodSearch = document.getElementById('method-search');
 
   function showPanel(n, label) {
     panels.forEach((p, i) => p.classList.toggle('active', i === n));
     phaseLabel.textContent = label;
   }
 
+  function highlightDual(which) {
+    methodFs.classList.toggle('active', which === 'fs' || which === 'both');
+    methodSearch.classList.toggle('active', which === 'search' || which === 'both');
+  }
+
   function run() {
-    step = 0;
     footer.className = 'footer';
     footer.textContent = 'fewer tools in context';
+    highlightDual('none');
 
     showPanel(0, 'ALL TOOLS LOADED');
     makeGrid(document.getElementById('grid-all'), ALL_TOOLS);
@@ -239,13 +286,22 @@
     }, 2800);
 
     setTimeout(() => {
-      showPanel(2, 'FILESYSTEM MCP');
+      showPanel(2, 'FILESYSTEM + SEARCH');
+      makeGrid(document.getElementById('grid-search'), SEARCH, { hit: SEARCH });
+      highlightDual('both');
     }, 5600);
 
     setTimeout(() => {
-      showPanel(3, 'SEARCH_TOOL');
-      makeGrid(document.getElementById('grid-search'), SEARCH, { hit: SEARCH });
+      highlightDual('fs');
+    }, 7200);
+
+    setTimeout(() => {
+      highlightDual('search');
     }, 8400);
+
+    setTimeout(() => {
+      highlightDual('both');
+    }, 9600);
 
     setTimeout(() => {
       footer.className = 'footer warn';
@@ -256,6 +312,7 @@
   }
 
   makeGrid(document.getElementById('grid-all'), ALL_TOOLS);
+  makeGrid(document.getElementById('grid-search'), SEARCH, { hit: SEARCH });
   run();
 </script>
 </body>

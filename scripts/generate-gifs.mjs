@@ -101,6 +101,16 @@ async function capturePage(browser, spec, colorScheme = 'dark') {
 async function main() {
   const colorScheme =
     process.argv.includes('--light') ? 'light' : 'dark'
+  const onlyArg = process.argv.find((a) => a.startsWith('--only='))?.slice(7)
+  const pages = onlyArg
+    ? PAGES.filter((p) => p.file.includes(onlyArg) || p.out.includes(onlyArg))
+    : PAGES
+
+  if (onlyArg && pages.length === 0) {
+    console.error(`No pages match --only=${onlyArg}`)
+    process.exit(1)
+  }
+
   console.log(`Color scheme: ${colorScheme}\n`)
 
   mkdirSync(OUT, { recursive: true })
@@ -109,7 +119,7 @@ async function main() {
   const browser = await chromium.launch()
 
   try {
-    for (const spec of PAGES) {
+    for (const spec of pages) {
       process.stdout.write(`Capturing ${spec.file}… `)
       const gif = await capturePage(browser, spec, colorScheme)
       const outPath = join(OUT, spec.out)
