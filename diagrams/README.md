@@ -16,11 +16,23 @@ npm run generate-gifs
 
 ## Static diagram (CLI vs MCP)
 
-| File | Blog section |
-|------|----------------|
-| `cli-mcp-stack.png` | CLI vs MCP |
-| `cli-mcp-stack.excalidraw` | Editable source (open in Excalidraw) |
-| `cli-mcp-stack.html` | Dark-theme HTML preview |
+**Canonical embed:** `cli-mcp-stack.png` (exported from Excalidraw). Use this PNG in Substack and GitHub Pages.
+
+| File | Role |
+|------|------|
+| `cli-mcp-stack.excalidraw` | **Source of truth** — edit in Excalidraw, then re-export |
+| `cli-mcp-stack.png` | **Canonical PNG** — blog embed (`../gifs/cli-mcp-stack.png` is a copy for Pages URLs) |
+| `cli-mcp-stack.html` | Optional dark-theme HTML preview only (not the published asset) |
+
+Regenerate the PNG from Excalidraw:
+
+```bash
+python3 -m venv .venv
+.venv/bin/pip install playwright
+.venv/bin/playwright install chromium
+.venv/bin/python scripts/render-excalidraw.py diagrams/cli-mcp-stack.excalidraw -o diagrams/cli-mcp-stack.png
+cp diagrams/cli-mcp-stack.png gifs/cli-mcp-stack.png
+```
 
 ## Substack placement
 
