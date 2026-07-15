@@ -42,7 +42,7 @@
   }
   .body { padding: 24px; min-height: 420px; }
 
-  .panel { display: none; flex-direction: column; gap: 14px; }
+  .panel { display: none; flex-direction: column; gap: 16px; }
   .panel.active { display: flex; }
 
   .prompt {
@@ -76,18 +76,19 @@
   .tool.hit { border-color: var(--accent); background: var(--accent-bg); color: var(--accent); }
   .tool.dim { opacity: .25; }
 
+  /* Phase 2: both discovery methods stacked vertically, full width, generous spacing */
   .dual {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
   }
   .method {
     border: 2px solid var(--border);
     background: var(--surface);
-    padding: 14px;
+    padding: 22px 24px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 16px;
     transition: border-color .4s, background .4s;
   }
   .method.active {
@@ -95,7 +96,7 @@
     background: var(--accent-bg);
   }
   .method-label {
-    font-size: 13px;
+    font-size: 16px;
     font-weight: 700;
     letter-spacing: .08em;
     text-transform: uppercase;
@@ -103,49 +104,60 @@
   }
 
   .fs {
-    font-size: 13px;
+    font-size: 15px;
     font-weight: 600;
-    line-height: 1.7;
+    line-height: 1.9;
     color: var(--text-soft);
   }
   .fs .dir { color: var(--accent); font-weight: 700; }
-  .fs .file { padding-left: 12px; }
+  .fs .file { padding-left: 16px; }
   .fs .file.open {
     color: var(--accent);
     background: var(--card);
     display: inline-block;
-    padding: 2px 6px;
+    padding: 3px 8px;
   }
 
   .search-row {
     display: grid;
     grid-template-columns: 1fr auto;
-    gap: 8px;
+    gap: 10px;
     align-items: center;
   }
   .search-box {
-    padding: 10px 12px;
+    padding: 13px 16px;
     border: 2px solid var(--accent);
     background: var(--card);
-    font-size: 13px;
+    font-size: 15px;
     font-weight: 700;
     color: var(--accent);
   }
   .search-btn {
-    padding: 10px 12px;
+    padding: 13px 18px;
     border: 2px solid var(--accent);
     background: var(--accent);
     color: var(--accent-on);
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 700;
   }
-  .tools-grid.compact {
-    grid-template-columns: 1fr 1fr;
+
+  .matches-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
   }
-  .tools-grid.compact .tool {
-    font-size: 12px;
-    padding: 8px;
+  .match-pill {
+    padding: 11px 18px;
+    border: 2px solid var(--accent);
+    background: var(--accent-bg);
+    color: var(--accent);
+    font-size: 14px;
+    font-weight: 700;
+    opacity: 0;
+    transform: scale(.9);
+    transition: opacity .3s, transform .3s;
   }
+  .match-pill.show { opacity: 1; transform: scale(1); }
 
   .count {
     font-size: 16px;
@@ -154,9 +166,10 @@
     text-align: center;
     min-height: 22px;
   }
+  .method .count { text-align: left; margin-top: -4px; }
 
   .footer {
-    margin-top: 8px;
+    margin-top: 18px;
     padding: 12px 14px;
     border: 2px solid var(--border);
     background: var(--surface);
@@ -213,7 +226,7 @@
             <div class="search-box">merge pull request</div>
             <div class="search-btn">search</div>
           </div>
-          <div class="tools-grid compact" id="grid-search"></div>
+          <div class="matches-row" id="grid-search"></div>
           <div class="count">2 matches returned</div>
         </div>
       </div>
@@ -256,6 +269,17 @@
     });
   }
 
+  function makePills(el, tools) {
+    el.innerHTML = '';
+    tools.forEach((t, i) => {
+      const d = document.createElement('div');
+      d.className = 'match-pill';
+      d.textContent = t;
+      el.appendChild(d);
+      setTimeout(() => d.classList.add('show'), i * 80);
+    });
+  }
+
   const panels = [0, 1, 2].map(i => document.getElementById('p' + i));
   const phaseLabel = document.getElementById('phase-label');
   const footer = document.getElementById('footer');
@@ -287,7 +311,7 @@
 
     setTimeout(() => {
       showPanel(2, 'FILESYSTEM + SEARCH');
-      makeGrid(document.getElementById('grid-search'), SEARCH, { hit: SEARCH });
+      makePills(document.getElementById('grid-search'), SEARCH);
       highlightDual('both');
     }, 5600);
 
@@ -312,7 +336,7 @@
   }
 
   makeGrid(document.getElementById('grid-all'), ALL_TOOLS);
-  makeGrid(document.getElementById('grid-search'), SEARCH, { hit: SEARCH });
+  makePills(document.getElementById('grid-search'), SEARCH);
   run();
 </script>
 </body>
